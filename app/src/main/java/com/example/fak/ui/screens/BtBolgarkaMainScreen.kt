@@ -22,6 +22,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import com.example.fak.R
 import com.example.fak.ui.viewModel.BtBolgarkaViewModel
 
@@ -30,6 +33,12 @@ data class BottomNavigationBarItem(
     val selectedIcon: ImageVector,
     val unSelectedIcon: ImageVector,
 )
+
+enum class BtBolgarkaScreen() {
+    Connect,
+    Send,
+    Settings,
+}
 
 @Composable
 fun BtBolgarkaMainScreen(
@@ -47,7 +56,7 @@ fun BtBolgarkaMainScreen(
             unSelectedIcon = Icons.Outlined.Send
         ),
         BottomNavigationBarItem(
-            name = "Настройки",
+            name = stringResource(R.string.settings),
             selectedIcon = Icons.Filled.Settings,
             unSelectedIcon =  Icons.Outlined.Settings
         )
@@ -77,7 +86,19 @@ fun BtBolgarkaMainScreen(
             }
         }
     ) {
-        Column(
+        val navController = rememberNavController()
+
+        NavHost(
+            navController = navController,
+            startDestination = BtBolgarkaScreen.Connect.name
+        ) {
+            composable(route = BtBolgarkaScreen.Connect.name) {
+                BtBolgarkaConnectionScreen(viewModel = viewModel)
+            }
+        }
+
+
+                    Column(
             modifier = Modifier.padding(it)
         ) {
 
