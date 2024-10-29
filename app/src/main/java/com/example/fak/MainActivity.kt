@@ -32,19 +32,8 @@ class MainActivity : ComponentActivity() {
         bluetoothHelper = BluetoothHelper(
             this,
             onDeviceFound = { device ->
-                val deviceName = if (ContextCompat.checkSelfPermission(application, Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_GRANTED) {
-                    device.name ?: "Неизвестное устройство"
-                } else {
-                    println("BLUETOOTH_CONNECT permission is not granted.")
-                    "Неизвестное устройство" // Значение по умолчанию, если разрешение не предоставлено
-                }
-
-                val deviceHardwareAddress = device.address
                 viewModel.addScannedDeviceToList(
-                    mapOf(
-                        "name" to deviceName,               // Используйте строку "name" в качестве ключа
-                        "address" to deviceHardwareAddress   // Используйте строку "address" в качестве ключа
-                    )
+                    device
                 )
             }
         )

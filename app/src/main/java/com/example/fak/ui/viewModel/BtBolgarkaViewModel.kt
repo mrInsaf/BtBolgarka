@@ -1,5 +1,6 @@
 package com.example.fak.ui.viewModel
 
+import android.bluetooth.BluetoothDevice
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -28,10 +29,19 @@ class BtBolgarkaViewModel(
 
     fun addScannedDeviceToList(deviceInfo: Map<String, String>) {
         btBolgarkaUiState = btBolgarkaUiState.copy(
-            scannedDevices = btBolgarkaUiState.scannedDevices + deviceInfo
+            scannedDevicesString = btBolgarkaUiState.scannedDevicesString + deviceInfo
         )
     }
 
+    fun addScannedDeviceToList(device: BluetoothDevice) {
+        btBolgarkaUiState = btBolgarkaUiState.copy(
+            scannedDevices = btBolgarkaUiState.scannedDevices + device
+        )
+    }
+
+    fun onConnectButtonClick(device: BluetoothDevice) {
+        bluetoothHelper.connectToDevice(device)
+    }
 }
 
 

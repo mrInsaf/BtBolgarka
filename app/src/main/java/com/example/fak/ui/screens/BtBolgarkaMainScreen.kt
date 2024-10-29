@@ -1,7 +1,11 @@
 package com.example.fak.ui.screens
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Send
@@ -17,9 +21,11 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.navigation.compose.NavHost
@@ -66,7 +72,9 @@ fun BtBolgarkaMainScreen(
     }
     Scaffold(
         bottomBar = {
-            NavigationBar {
+            NavigationBar(
+                containerColor = Color.White
+            ) {
                 bottomNavigationBarItems.forEachIndexed { index, navigationBarItem ->
                     NavigationBarItem(
                         selected = selectedIcon == index,
@@ -84,8 +92,8 @@ fun BtBolgarkaMainScreen(
                     )
                 }
             }
-        }
-    ) {
+        },
+    ) {innerPadding ->
         val navController = rememberNavController()
 
         NavHost(
@@ -93,15 +101,11 @@ fun BtBolgarkaMainScreen(
             startDestination = BtBolgarkaScreen.Connect.name
         ) {
             composable(route = BtBolgarkaScreen.Connect.name) {
-                BtBolgarkaConnectionScreen(viewModel = viewModel)
+                BtBolgarkaConnectionScreen(
+                    viewModel = viewModel,
+                    modifier = Modifier.padding(innerPadding)
+                )
             }
-        }
-
-
-                    Column(
-            modifier = Modifier.padding(it)
-        ) {
-
         }
     }
 }

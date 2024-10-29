@@ -4,12 +4,16 @@ import android.Manifest
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothManager
+import android.bluetooth.BluetoothSocket
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageManager
+import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import java.io.IOException
+import java.util.UUID
 
 class BluetoothHelper(
     private val context: Context,
@@ -32,17 +36,13 @@ class BluetoothHelper(
         return bluetoothAdapter != null
     }
 
-    fun getPairedDevices(): List<Map<String, String>> {
-        val devicesList = mutableListOf<Map<String, String>>()
+    fun getPairedDevices(): List<BluetoothDevice> {
+        val devicesList = mutableListOf<BluetoothDevice>()
 
         if (ContextCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_GRANTED) {
             val pairedDevices: Set<BluetoothDevice>? = bluetoothAdapter?.bondedDevices
             pairedDevices?.forEach { device ->
-                val deviceInfo = mapOf(
-                    "name" to (device.name ?: "Неизвестное устройство"),
-                    "address" to device.address
-                )
-                devicesList.add(deviceInfo)
+                devicesList.add(device)
             }
         } else {
             println("Bluetooth_CONNECT permission is not granted.")
@@ -86,6 +86,57 @@ class BluetoothHelper(
         } catch (e: SecurityException) {
             println("SecurityException: Unable to stop discovery due to missing permission")
         }
+    }
+
+    private inner class ConnectThread(device: BluetoothDevice) : Thread() {
+        private val MY_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB")
+
+        private val mmSocket: BluetoothSocket? = try {
+            if (ActivityCompat.checkSelfPermission(
+                    context,
+                    Manifest.permission.BLUETOOTH_CONNECT
+                ) == PackageManager.PERMISSION_GRANTED
+            ) {
+                device.createRfcommSocketToServiceRecord(MY_UUID)
+            } else {
+                null
+            }
+        } catch (e: SecurityException) {
+            println("Bluetooth_CONNECT permission was revoked")
+            null
+        }
+
+        override fun run() {
+            if (ActivityCompat.checkSelfPermission(
+                    context,
+                    Manifest.permission.BLUETOOTH_SCAN
+                ) != PackageManager.PERMISSION_GRANTED
+            ) {
+                println("wtf")
+            }
+            bluetoothAdapter?.cancelDiscovery()
+
+            mmSocket?.let { socket ->
+                try {
+                    socket.connect()
+                } catch (e: IOException) {
+                    println("Could not connect to device $e")
+                    cancel()
+                }
+            }
+        }
+
+        fun cancel() {
+            try {
+                mmSocket?.close()
+            } catch (e: IOException) {
+                println("Could not close the client socket")
+            }
+        }
+    }
+
+    fun connectToDevice(device: BluetoothDevice) {
+        ConnectThread(device).start()
     }
 
 }
