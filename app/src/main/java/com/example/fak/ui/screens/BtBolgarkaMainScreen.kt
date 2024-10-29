@@ -1,37 +1,86 @@
 package com.example.fak.ui.screens
 
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Send
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.outlined.Search
+import androidx.compose.material.icons.outlined.Send
+import androidx.compose.material.icons.outlined.Settings
+import androidx.compose.material3.Icon
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
+import com.example.fak.R
 import com.example.fak.ui.viewModel.BtBolgarkaViewModel
+
+data class BottomNavigationBarItem(
+    val name: String,
+    val selectedIcon: ImageVector,
+    val unSelectedIcon: ImageVector,
+)
 
 @Composable
 fun BtBolgarkaMainScreen(
     viewModel: BtBolgarkaViewModel
 ) {
-    // Ваш контекст
-    val context = LocalContext.current
-
-    // Получение списка спаренных устройств
-    LaunchedEffect(Unit) {
-        viewModel.fetchPairedDevices()
+    val bottomNavigationBarItems = listOf(
+        BottomNavigationBarItem(
+            name = stringResource(R.string.connect),
+            selectedIcon = Icons.Filled.Search,
+            unSelectedIcon = Icons.Outlined.Search
+        ),
+        BottomNavigationBarItem(
+            name = stringResource(R.string.send),
+            selectedIcon = Icons.Filled.Send,
+            unSelectedIcon = Icons.Outlined.Send
+        ),
+        BottomNavigationBarItem(
+            name = "Настройки",
+            selectedIcon = Icons.Filled.Settings,
+            unSelectedIcon =  Icons.Outlined.Settings
+        )
+    )
+    var selectedIcon by rememberSaveable {
+        mutableIntStateOf(0)
     }
-
-    // Отображение устройств из btBolgarkaUiState
-    val pairedDevices = viewModel.btBolgarkaUiState.pairedDevices
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
+    Scaffold(
+        bottomBar = {
+            NavigationBar {
+                bottomNavigationBarItems.forEachIndexed { index, navigationBarItem ->
+                    NavigationBarItem(
+                        selected = selectedIcon == index,
+                        onClick = { selectedIcon = index },
+                        label = { Text(text = navigationBarItem.name) },
+                        icon = { Icon(
+                            imageVector = if (
+                                index == selectedIcon
+                                ) {
+                                    navigationBarItem.selectedIcon
+                                }
+                                else navigationBarItem.unSelectedIcon,
+                            contentDescription = navigationBarItem.name
+                        )}
+                    )
+                }
+            }
+        }
     ) {
-        Text(text = "Сопряженные устройства")
-        pairedDevices.forEach { device ->
-            val name = device["name"] ?: "Неизвестное устройство"
-            val address = device["address"] ?: "Нет адреса"
-            Text(text = "$name - $address")
+        Column(
+            modifier = Modifier.padding(it)
+        ) {
+
         }
     }
 }

@@ -23,7 +23,7 @@ class MainActivity : ComponentActivity() {
     private lateinit var permissionManager: PermissionManager
 
     private val viewModel: BtBolgarkaViewModel by viewModels {
-        BtBolgarkaViewModelFactory(application, bluetoothHelper)
+        BtBolgarkaViewModelFactory(bluetoothHelper)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -40,7 +40,12 @@ class MainActivity : ComponentActivity() {
                 }
 
                 val deviceHardwareAddress = device.address
-                println("Discovered device: $deviceName, Address: $deviceHardwareAddress")
+                viewModel.addScannedDeviceToList(
+                    mapOf(
+                        "name" to deviceName,               // Используйте строку "name" в качестве ключа
+                        "address" to deviceHardwareAddress   // Используйте строку "address" в качестве ключа
+                    )
+                )
             }
         )
 
@@ -48,7 +53,7 @@ class MainActivity : ComponentActivity() {
             this,
             onBluetoothEnabled = {
                 println("Bluetooth enabled")
-                bluetoothHelper.startDiscovery() // Начало поиска устройств
+//                bluetoothHelper.startDiscovery() // Начало поиска устройств
             },
             onPermissionDenied = {
                 println("Bluetooth permission denied")

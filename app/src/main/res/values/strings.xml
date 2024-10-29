@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">fak</string>
+    <string name="connect">Подключиться</string>
+    <string name="send">Отправить</string>
 </resources>
