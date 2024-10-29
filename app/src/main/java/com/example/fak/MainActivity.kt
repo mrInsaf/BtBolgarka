@@ -23,7 +23,7 @@ class MainActivity : ComponentActivity() {
     private lateinit var permissionManager: PermissionManager
 
     private val viewModel: BtBolgarkaViewModel by viewModels {
-        BtBolgarkaViewModelFactory(application)
+        BtBolgarkaViewModelFactory(application, bluetoothHelper)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {

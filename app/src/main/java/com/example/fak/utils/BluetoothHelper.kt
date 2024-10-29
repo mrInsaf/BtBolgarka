@@ -32,6 +32,25 @@ class BluetoothHelper(
         return bluetoothAdapter != null
     }
 
+    fun getPairedDevices(): List<Map<String, String>> {
+        val devicesList = mutableListOf<Map<String, String>>()
+
+        if (ContextCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_GRANTED) {
+            val pairedDevices: Set<BluetoothDevice>? = bluetoothAdapter?.bondedDevices
+            pairedDevices?.forEach { device ->
+                val deviceInfo = mapOf(
+                    "name" to (device.name ?: "Неизвестное устройство"),
+                    "address" to device.address
+                )
+                devicesList.add(deviceInfo)
+            }
+        } else {
+            println("Bluetooth_CONNECT permission is not granted.")
+        }
+
+        return devicesList
+    }
+
     fun startDiscovery() {
         // Проверяем наличие разрешения
         if (ContextCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_SCAN) == PackageManager.PERMISSION_GRANTED) {
