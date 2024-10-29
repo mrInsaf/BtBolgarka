@@ -14,8 +14,9 @@ class PermissionManager(
     private val onBluetoothEnabled: () -> Unit,
     private val onPermissionDenied: () -> Unit
 ) {
-    private val permissionLauncher = activity.registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
-        if (isGranted) {
+    private val permissionLauncher = activity.registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions ->
+        // Проверяем, были ли разрешения предоставлены
+        if (permissions.values.all { it }) {
             requestBluetoothEnable()
         } else {
             onPermissionDenied()
@@ -31,13 +32,25 @@ class PermissionManager(
     }
 
     fun checkAndRequestPermissions() {
-        if (ContextCompat.checkSelfPermission(activity, Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_GRANTED) {
+        val requiredPermissions = arrayOf(
+            Manifest.permission.BLUETOOTH,
+            Manifest.permission.BLUETOOTH_ADMIN,
+            Manifest.permission.ACCESS_FINE_LOCATION,
+            Manifest.permission.ACCESS_COARSE_LOCATION,
+            Manifest.permission.BLUETOOTH_CONNECT,
+            Manifest.permission.BLUETOOTH_SCAN
+        )
+
+        val permissionsToRequest = requiredPermissions.filter {
+            ContextCompat.checkSelfPermission(activity, it) != PackageManager.PERMISSION_GRANTED
+        }
+
+        if (permissionsToRequest.isEmpty()) {
             requestBluetoothEnable()
         } else {
-            permissionLauncher.launch(Manifest.permission.BLUETOOTH_CONNECT)
+            permissionLauncher.launch(permissionsToRequest.toTypedArray())
         }
     }
-
     private fun requestBluetoothEnable() {
         val intent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
         bluetoothLauncher.launch(intent)

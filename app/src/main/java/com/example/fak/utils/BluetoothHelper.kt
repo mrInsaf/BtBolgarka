@@ -19,7 +19,6 @@ class BluetoothHelper(
     private val context: Context,
     private val onDeviceFound: (BluetoothDevice) -> Unit
 ) {
-
     private val bluetoothManager: BluetoothManager = context.getSystemService(BluetoothManager::class.java)
     val bluetoothAdapter: BluetoothAdapter? = bluetoothManager.adapter
 
@@ -92,17 +91,32 @@ class BluetoothHelper(
         private val MY_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB")
 
         private val mmSocket: BluetoothSocket? = try {
+            when (device.bondState) {
+                BluetoothDevice.BOND_NONE -> {
+                    println("Device is not bonded")
+                    device.createBond()
+                }
+                BluetoothDevice.BOND_BONDING -> println("Device is bonding")
+                BluetoothDevice.BOND_BONDED -> {
+                    println("Device is bonded")
+                    unpairDevice(device)
+                    sleep(100L)
+                    device.createBond()
+                }
+                else -> println("Unknown bond state: ${device.bondState}")
+            }
             if (ActivityCompat.checkSelfPermission(
                     context,
                     Manifest.permission.BLUETOOTH_CONNECT
                 ) == PackageManager.PERMISSION_GRANTED
             ) {
-                device.createRfcommSocketToServiceRecord(MY_UUID)
+                val method = device.javaClass.getMethod("createRfcommSocket", Int::class.javaPrimitiveType)
+                method.invoke(device, 1) as BluetoothSocket
             } else {
                 null
             }
         } catch (e: SecurityException) {
-            println("Bluetooth_CONNECT permission was revoked")
+            println("Bluetooth_CONNECT permission was revoked $e")
             null
         }
 
@@ -123,6 +137,16 @@ class BluetoothHelper(
                     println("Could not connect to device $e")
                     cancel()
                 }
+            }
+        }
+
+        private fun unpairDevice(device: BluetoothDevice) {
+            try {
+                val method = device.javaClass.getMethod("removeBond")
+                method.invoke(device)
+                println("Device unpaired successfully.")
+            } catch (e: Exception) {
+                println("Failed to unpair device: $e")
             }
         }
 
